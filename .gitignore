@@ -1,0 +1,2 @@
+# Files to be ignored
+# Most files could be added but should be important to note that no secrets are added to Arduino Codebase, such as Wi-Fi passwords and/or API Keys
