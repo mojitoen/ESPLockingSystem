@@ -1,9 +1,10 @@
 #include <ESP8266WiFi.h>
 #include <ESP8266WebServer.h>
+#include "secret.h"
 
 //Placeholder Wifi information. Change before you upload to hardware!!
-const char* ssid = "Test";
-const char* password = "123";
+const char* ssid = SECRET_SSID;
+const char* password = SECRET_WPA;
 
 //Init server
 ESP8266WebServer server(80);
