@@ -11,6 +11,7 @@
 #define SCREEN_WIDTH 128
 #define SCREEN_HEIGHT 64
 
+
 //Construct Adafruit SSD1306
 Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, -1);
 
@@ -29,7 +30,7 @@ void handleRoot() {
   server.sendHeader("Access-Control-Allow-Origin", "*");
   server.send(401, "text/plain", "This isn't how you're supposed to use this device!");
   blink();
-  display.setCursor(0, 10);
+  display.setCursor(2, 10);
   display.clearDisplay();
   display.println("GET-Received");
   display.display();
@@ -44,6 +45,15 @@ void displayStatus() {
     display.display();
     Serial.println("Connected to WiFi. IP-address: ");
     Serial.println(WiFi.localIP()); 
+    String IP = WiFi.localIP().toString();
+    if (IP.startsWith("169.254")) {
+      display.clearDisplay();
+      display.println("Received invalid IP-address. Attempting to restart..");
+      display.display();
+      delay(10000);
+      setup();
+    }
+
     }
     
 //HandlePost happens whenever the servers gets a POST-request
@@ -84,19 +94,19 @@ void setup() {
     Serial.println("Error allocating memory ");
     }
   delay(2000);
+  
+//Prepares display for use
   display.clearDisplay();
   display.setTextSize(1);
   display.setTextColor(WHITE);
-  display.setCursor(0, 10);
-
-
+  display.setCursor(7, 0);
 
   // Connect to Wi-Fi with strings ssid and password
   WiFi.begin(ssid, password);
   int displayloadingbar = 0;
-  //While it ISNT-connected it will delay and print Serial until connected. Easier way could be to use ext LCD to establish connection. 
+  //While it ISNT-connected it will delay and print Serial until connected.
   while (WiFi.status() != WL_CONNECTED) {
-    delay(500);
+    delay(300);
     Serial.println("Connecting to WiFi...");
     display.clearDisplay();
 
@@ -118,7 +128,7 @@ void setup() {
       displayloadingbar = 0;
     }
     display.display();
-    blink();
+    //blink();
     display.setCursor(0, 10);
   }
 
@@ -134,6 +144,26 @@ void setup() {
   Serial.println("HTTP server started");
 }
 
+unsigned long lastNetworkCheck = 0;
+const unsigned long networkCheckInterval = 30000;
+
 void loop() {
   server.handleClient();
+
+//Checks if we still have Wi-Fi every thirty seconds, and if we don't, restarts setup
+//Nice looking loading screen
+  int disconnectionloadingbar = 0;
+  unsigned long currentMillis = millis();
+  if(currentMillis - lastNetworkCheck >= networkCheckInterval) {
+    if(WiFi.status() != WL_CONNECTED) {
+      
+      display.clearDisplay();
+      display.println("Disconnected....");
+      display.println("Attempting to reconnect");
+      display.display();
+      delay(10000);
+      setup();
+    }
+  }
+ 
 }
